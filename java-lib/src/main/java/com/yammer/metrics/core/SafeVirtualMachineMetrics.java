@@ -54,9 +54,15 @@ public class SafeVirtualMachineMetrics extends VirtualMachineMetrics {
     if (!(this.os instanceof UnixOperatingSystemMXBean)) {
       return Double.NaN;
     }
-    Long openFds = ((UnixOperatingSystemMXBean)os).getOpenFileDescriptorCount();
-    Long maxFds = ((UnixOperatingSystemMXBean)os).getMaxFileDescriptorCount();
-    return openFds.doubleValue() / maxFds.doubleValue();
+    try {
+      Long openFds = ((UnixOperatingSystemMXBean) os).getOpenFileDescriptorCount();
+      Long maxFds = ((UnixOperatingSystemMXBean) os).getMaxFileDescriptorCount();
+      return openFds.doubleValue() / maxFds.doubleValue();
+    } catch (Throwable t) {
+      // if we for whatever reason can't get the FD usage (permissions issue or unsupported OS),
+      // we still need to return _something_
+      return -1;
+    }
   }
 
 }
